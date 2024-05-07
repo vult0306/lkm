@@ -37,7 +37,7 @@ module_param_array(myintArray, int, &arr_argc, 0000);
 MODULE_PARM_DESC(myintArray, "An array of integer");
 
 static int __init hello5_init(void) {
-
+    int i=0;
     printk(KERN_ERR "hello world 5 \n");
     printk(KERN_ERR "myshort: %hd\n",myshort);
     printk(KERN_ERR "myint: %d\n",myint);
@@ -45,7 +45,7 @@ static int __init hello5_init(void) {
     printk(KERN_ERR "mystring: %s\n",mystring);
     
     printk(KERN_ERR "got %d arguments for myintArray\n",arr_argc);
-    for (int i=0; i<sizeof(myintArray)/sizeof(int); i++) {
+    for (i=0; i<sizeof(myintArray)/sizeof(int); i++) {
         printk(KERN_ERR "myintArray[%d]: %d\n", i, myintArray[i]);
     }
 
