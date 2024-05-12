@@ -26,7 +26,7 @@ int main()
         printf("*********************************\n");
         printf("*******WWW.EmbeTronicX.com*******\n");
 
-        fd = open("/dev/mod2_dev", O_RDWR);
+        fd = open("/dev/etx_device", O_RDWR);
         if(fd < 0) {
                 printf("Cannot open device file...\n");
                 return 0;
@@ -46,7 +46,7 @@ int main()
                                 printf("Enter the string to write into driver :");
                                 scanf("  %[^\t\n]s", write_buf);
                                 printf("Data Writing ...");
-                                write(fd, write_buf, strlen(write_buf)+1);
+                                write(fd, write_buf, strlen((char*)write_buf)+1);
                                 printf("Done!\n");
                                 break;
                         case '2':
