@@ -8,12 +8,16 @@
 #include <linux/slab.h>     /*kmalloc()*/
 #include <linux/uaccess.h>  /*copy_to/from_user*/
 #include <linux/err.h>
-
+#include <linux/ioctl.h>
 
 #define DRIVER_AUTHOR "vle <letuanvu91@gmail.com>"
 #define DRIVER_DESC "Real device driver"
+#define WR_VALUE _IOW('a','a',int32_t*)
+#define RD_VALUE _IOR('a','b',int32_t*)
+
 #define mem_size    1024
 
+int32_t value = 0;
 dev_t dev = 0;
 static struct class *dev_class;
 static struct cdev etx_cdev;
@@ -29,6 +33,7 @@ static int      etx_open(struct inode *inode, struct file *file);
 static int      etx_release(struct inode *inode, struct file *file);
 static ssize_t  etx_read(struct file *filp, char __user *buf, size_t len, loff_t *off);
 static ssize_t  etx_write(struct file *filp, const char __user *buf, size_t len, loff_t *off);
+static long  etx_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
 
 /*
 ** File operators structure
@@ -36,11 +41,12 @@ static ssize_t  etx_write(struct file *filp, const char __user *buf, size_t len,
 
 static struct file_operations fops =
 {
-    .owner      = THIS_MODULE,
-    .read       = etx_read,
-    .write      = etx_write,
-    .open       = etx_open,
-    .release    = etx_release,
+    .owner          = THIS_MODULE,
+    .read           = etx_read,
+    .write          = etx_write,
+    .open           = etx_open,
+    .unlocked_ioctl = etx_ioctl,
+    .release        = etx_release,
 };
 
 /*
@@ -81,6 +87,29 @@ static ssize_t etx_write(struct file *filp, const char __user *buf, size_t len, 
     return len;
 }
 
+static long etx_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+{
+    switch(cmd) {
+        case WR_VALUE:
+            if( copy_from_user(&value, (int32_t*)arg, sizeof(value)))
+            {
+                pr_err("Data Write: Err!\n");
+            }
+            pr_info("Value = %d\n",value);
+            break;
+        case RD_VALUE:
+            if( copy_to_user((int32_t*)arg, &value, sizeof(value)))
+            {
+                pr_err("Data Read: Err!\n");
+            }
+            break;
+        default:
+            pr_info("Default\n");
+            break;
+    }
+    return 0;
+}
+
 static int __init etx_driver_init(void)
 {
     /* Allocating Major number */
@@ -113,7 +142,7 @@ static int __init etx_driver_init(void)
     }
 
     /* Creating Physical memory */
-    if ((kernel_buffer = kzalloc(mem_size, GFP_KERNEL)) == 0)
+    if ((kernel_buffer = kvmalloc(mem_size, GFP_KERNEL)) == 0)
     {
         pr_info("Cannot allocate memory in kernel\n");
         goto r_device;
