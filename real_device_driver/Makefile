@@ -10,4 +10,4 @@ all:
 clean:
 	$(MAKE) -C $(KERNELDIR)/build M=$(PWD) clean
 
-obj-m += driver.o
+obj-m += real_device_driver.o
